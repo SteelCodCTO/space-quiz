@@ -122,6 +122,14 @@
     .result-medal-emoji:empty { display: none; }
     .result p.result-medal { margin-top: 8px; color: var(--text); font-size: 18px; font-weight: 800; }
     .result-score { display: inline-block; margin: 24px 0 4px; padding: 12px 22px; border-radius: 14px; background: var(--soft); color: var(--accent); font-size: 21px; font-weight: 800; }
+    .review { margin-top: 30px; text-align: left; }
+    .review h3 { margin: 0 0 12px; font-size: 19px; }
+    .review-list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+    .review-item { padding: 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); }
+    .review-item h4 { margin: 0 0 8px; font-size: 16px; line-height: 1.4; }
+    .review-item p { margin-top: 5px; color: var(--text); }
+    .review-item .review-explanation { color: var(--muted); }
+    .review-empty { padding: 14px; border-radius: 12px; color: var(--success) !important; background: var(--success-bg); }
     .footer { margin: 23px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
     @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-3px); } }
     @keyframes pop { from { opacity: 0; transform: scale(.98); } to { opacity: 1; transform: scale(1); } }
@@ -187,6 +195,11 @@
         <div class="result-medal-emoji" id="result-medal-emoji" aria-hidden="true"></div>
         <p class="result-medal" id="result-medal" aria-live="polite" aria-atomic="true"></p>
         <div class="result-score" id="result-score"></div>
+        <section class="review" aria-labelledby="review-title">
+          <h3 id="review-title">Questions to review</h3>
+          <ol class="review-list" id="review-list"></ol>
+          <p class="review-empty" id="review-empty" hidden>You got every question right — nothing to review. Great work!</p>
+        </section>
         <button class="restart" id="restart" type="button">Play again <span aria-hidden="true">↗</span></button>
       </div>
     </section>
@@ -212,9 +225,12 @@
     const answers = document.getElementById("answers");
     const feedback = document.getElementById("feedback");
     const next = document.getElementById("next");
+    const reviewList = document.getElementById("review-list");
+    const reviewEmpty = document.getElementById("review-empty");
     let index = 0;
     let score = 0;
     let answered = false;
+    let responses = [];
 
     function updateStats() {
       const completed = index + (answered ? 1 : 0);
@@ -258,6 +274,12 @@
       const current = questions[index];
       const isCorrect = choice === current.correct;
       if (isCorrect) score++;
+      responses.push({
+        question: current.question,
+        selectedAnswer: current.answers[choice],
+        correctAnswer: current.answers[current.correct],
+        explanation: current.fact
+      });
       Array.from(answers.children).forEach((button, i) => {
         button.disabled = true;
         if (i === current.correct || (i === choice && !isCorrect)) {
@@ -307,6 +329,30 @@
       document.getElementById("result-medal-emoji").textContent = medal.emoji;
       document.getElementById("result-medal").textContent = medal.label;
       document.getElementById("result-score").textContent = `${score} / ${questions.length} correct`;
+      const missedResponses = responses.filter(response => response.selectedAnswer !== response.correctAnswer);
+      reviewList.replaceChildren();
+      reviewEmpty.hidden = missedResponses.length !== 0;
+      reviewList.hidden = missedResponses.length === 0;
+      missedResponses.forEach(response => {
+        const item = document.createElement("li");
+        item.className = "review-item";
+        const prompt = document.createElement("h4");
+        prompt.textContent = response.question;
+        item.append(prompt);
+        [
+          ["Your answer", response.selectedAnswer, ""],
+          ["Correct answer", response.correctAnswer, ""],
+          ["Explanation", response.explanation, "review-explanation"]
+        ].forEach(([label, text, className]) => {
+          const detail = document.createElement("p");
+          if (className) detail.className = className;
+          const detailLabel = document.createElement("strong");
+          detailLabel.textContent = `${label}: `;
+          detail.append(detailLabel, text);
+          item.append(detail);
+        });
+        reviewList.append(item);
+      });
       document.getElementById("result-title").focus();
     }
 
@@ -318,6 +364,10 @@
     document.getElementById("restart").addEventListener("click", () => {
       index = 0;
       score = 0;
+      responses = [];
+      reviewList.replaceChildren();
+      reviewList.hidden = false;
+      reviewEmpty.hidden = true;
       result.hidden = true;
       result.classList.remove("celebration");
       quiz.hidden = false;
