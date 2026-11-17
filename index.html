@@ -232,6 +232,13 @@
     let answered = false;
     let responses = [];
 
+    function shuffleQuestions() {
+      for (let i = questions.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [questions[i], questions[j]] = [questions[j], questions[i]];
+      }
+    }
+
     function updateStats() {
       const completed = index + (answered ? 1 : 0);
       document.getElementById("progress-text").textContent = `${completed} of ${questions.length} answered`;
@@ -371,8 +378,10 @@
       result.hidden = true;
       result.classList.remove("celebration");
       quiz.hidden = false;
+      shuffleQuestions();
       renderQuestion(true);
     });
+    shuffleQuestions();
     renderQuestion();
   </script>
 </body>
