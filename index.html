@@ -118,6 +118,9 @@
     .result h2 { font-size: 30px; margin: 8px 0 10px; }
     .result h2:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
     .result p { color: var(--muted); margin: 0; }
+    .result-medal-emoji { margin-top: 20px; font-size: 58px; line-height: 1; }
+    .result-medal-emoji:empty { display: none; }
+    .result p.result-medal { margin-top: 8px; color: var(--text); font-size: 18px; font-weight: 800; }
     .result-score { display: inline-block; margin: 24px 0 4px; padding: 12px 22px; border-radius: 14px; background: var(--soft); color: var(--accent); font-size: 21px; font-weight: 800; }
     .footer { margin: 23px 0 0; color: var(--muted); font-size: 12px; text-align: center; }
     @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(6px); } 75% { transform: translateX(-3px); } }
@@ -181,6 +184,8 @@
         <p class="eyebrow">Mission complete</p>
         <h2 id="result-title" tabindex="-1"></h2>
         <p id="result-message"></p>
+        <div class="result-medal-emoji" id="result-medal-emoji" aria-hidden="true"></div>
+        <p class="result-medal" id="result-medal"></p>
         <div class="result-score" id="result-score"></div>
         <button class="restart" id="restart" type="button">Play again <span aria-hidden="true">↗</span></button>
       </div>
@@ -289,6 +294,15 @@
       document.getElementById("result-emoji").textContent = reaction.emoji;
       document.getElementById("result-title").textContent = reaction.title;
       document.getElementById("result-message").textContent = reaction.message;
+      const medal = score === 10
+        ? { emoji: "🥇", label: "Gold medal" }
+        : score >= 8
+          ? { emoji: "🥈", label: "Silver medal" }
+          : score >= 6
+            ? { emoji: "🥉", label: "Bronze medal" }
+            : { emoji: "", label: "No medal this time — get at least 6 correct to earn a medal." };
+      document.getElementById("result-medal-emoji").textContent = medal.emoji;
+      document.getElementById("result-medal").textContent = medal.label;
       document.getElementById("result-score").textContent = `${score} / ${questions.length} correct`;
       document.getElementById("result-title").focus();
     }
