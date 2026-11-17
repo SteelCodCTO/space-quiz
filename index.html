@@ -185,7 +185,7 @@
         <h2 id="result-title" tabindex="-1"></h2>
         <p id="result-message"></p>
         <div class="result-medal-emoji" id="result-medal-emoji" aria-hidden="true"></div>
-        <p class="result-medal" id="result-medal"></p>
+        <p class="result-medal" id="result-medal" aria-live="polite" aria-atomic="true"></p>
         <div class="result-score" id="result-score"></div>
         <button class="restart" id="restart" type="button">Play again <span aria-hidden="true">↗</span></button>
       </div>
@@ -294,13 +294,16 @@
       document.getElementById("result-emoji").textContent = reaction.emoji;
       document.getElementById("result-title").textContent = reaction.title;
       document.getElementById("result-message").textContent = reaction.message;
-      const medal = score === 10
-        ? { emoji: "🥇", label: "Gold medal" }
-        : score >= 8
-          ? { emoji: "🥈", label: "Silver medal" }
-          : score >= 6
-            ? { emoji: "🥉", label: "Bronze medal" }
-            : { emoji: "", label: "No medal this time — get at least 6 correct to earn a medal." };
+      let medal;
+      if (score === questions.length) {
+        medal = { emoji: "🥇", label: "Gold medal" };
+      } else if (score >= 8) {
+        medal = { emoji: "🥈", label: "Silver medal" };
+      } else if (score >= 6) {
+        medal = { emoji: "🥉", label: "Bronze medal" };
+      } else {
+        medal = { emoji: "", label: "No medal this time — get at least 6 correct to earn a medal." };
+      }
       document.getElementById("result-medal-emoji").textContent = medal.emoji;
       document.getElementById("result-medal").textContent = medal.label;
       document.getElementById("result-score").textContent = `${score} / ${questions.length} correct`;
